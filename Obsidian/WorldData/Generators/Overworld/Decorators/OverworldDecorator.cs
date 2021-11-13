@@ -1,10 +1,11 @@
-﻿using Obsidian.API;
+﻿using System;
+using System.Linq;
+using Obsidian.API;
 using Obsidian.WorldData.Generators.Overworld.BiomeNoise;
 using Obsidian.WorldData.Generators.Overworld.Features.Trees;
 using Obsidian.WorldData.Generators.Overworld.Features.Flora;
+using Obsidian.WorldData.Generators.Overworld.Features.Structures;
 using Obsidian.WorldData.Generators.Overworld.Terrain;
-using System;
-using System.Linq;
 
 namespace Obsidian.WorldData.Generators.Overworld.Decorators
 {
@@ -20,12 +21,30 @@ namespace Obsidian.WorldData.Generators.Overworld.Decorators
                     var b = ChunkBiome.GetBiome((chunk.X << 4) + x, (chunk.Z << 4) + z, ot);
                     var blockPos = new Vector(x, (int)terrainHeightMap[x, z], z);
                     IDecorator decorator = DecoratorFactory.GetDecorator(b, chunk, blockPos, noise);
-
                     decorator.Decorate();
+
+                    GenerateStructures(world, blockPos + (chunk.X << 4, 0, chunk.Z << 4), decorator.Features, noise);
                     GenerateTrees(world, blockPos + (chunk.X << 4, 0, chunk.Z << 4), decorator.Features, noise);
                     GenerateFlora(world, blockPos + (chunk.X << 4, 0, chunk.Z << 4), decorator.Features, noise);
 
                 }
+            }
+        }
+
+        private static void GenerateStructures(World world, Vector pos, DecoratorFeatures features, TerrainNoise noise)
+        {
+            foreach (var (structure, index) in features.Structures.Select((value, i) => (value, i)))
+            {
+                if (structure.Frequency == 0) { continue; }
+                var structInstance = Activator.CreateInstance(structure.StructureType, world) as BaseStructure;
+                if (structInstance is null) { continue; }
+
+                var noiseVal = noise.Decoration(pos.X, -33 + (index * 22), pos.Z);
+                var freq = structure.Frequency / 800.0;
+                bool build = noiseVal > 0.9 && noiseVal <= freq + 0.9;
+                if (!build) { continue; }
+
+                structInstance.TryGenerateStructure(pos);
             }
         }
 
@@ -55,7 +74,7 @@ namespace Obsidian.WorldData.Generators.Overworld.Decorators
                 offset = (int)heightOffset;
             tree.TryGenerateTree(position, offset);
         }
-        
+
         private static void GenerateTrees(World world, Vector pos, DecoratorFeatures features, TerrainNoise noise)
         {
             foreach (var (tree, index) in features.Trees.Select((value, i) => (value, i)))
@@ -65,11 +84,11 @@ namespace Obsidian.WorldData.Generators.Overworld.Decorators
 
                 // Use a different noisemap for each tree type by setting another Y value.
                 var noiseVal = noise.Decoration(pos.X, -45 + (index * 10), pos.Z);
-                var freq = tree.Frequency/100.0;
+                var freq = tree.Frequency / 100.0;
                 bool isTree = noiseVal > 0.8 && noiseVal <= freq + 0.8;
                 if (!isTree) { continue; }
 
-                int heightVariance = (int) (((noiseVal - 0.8) * 100) - (freq/2));
+                int heightVariance = (int)(((noiseVal - 0.8) * 100) - (freq / 2));
                 GrowTree(pos, treeInstance, heightVariance);
             }
         }

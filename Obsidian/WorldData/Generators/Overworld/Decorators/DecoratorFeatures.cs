@@ -16,6 +16,8 @@ namespace Obsidian.WorldData.Generators.Overworld.Decorators
         /// </summary>
         public List<FloraInfo> Flora { get; set; } = new List<FloraInfo>();
 
+        public List<StructureInfo> Structures { get; set; } = new();
+
         public class TreeInfo
         {
             /// <summary>
@@ -53,6 +55,19 @@ namespace Obsidian.WorldData.Generators.Overworld.Decorators
                 Radius = radius;
                 Density = density;
                 FloraType = floraType;
+            }
+        }
+
+        public class StructureInfo
+        {
+            public Type StructureType { get; set; }
+
+            public int Frequency { get; set; }
+
+            public StructureInfo(int frequency, Type structureType)
+            {
+                Frequency = frequency;
+                StructureType = structureType;
             }
         }
     }

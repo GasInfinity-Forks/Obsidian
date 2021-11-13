@@ -42,14 +42,14 @@ namespace Obsidian.WorldData.Generators.Overworld.Features.Flora
             density = Math.Max(1, 10 - density);
             var seedRand = new Random(seed + origin.GetHashCode());
 
-            for (int rz = 0; rz <= radius * 2; rz++)
+            for (int rx = -radius; rx <= radius + 1; rx++)
             {
-                for (int rx = 0; rx <= radius * 2; rx++)
+                for (int rz = -radius; rz <= radius + 1; rz++)
                 {
-                    if ((radius - rx) * (radius - rx) + (radius - rz) * (radius - rz) <= (radius * radius))
+                    if ((rx * rx) + (rz * rz) <= (radius * radius))
                     {
-                        int x = origin.X - radius + rx;
-                        int z = origin.Z - radius + rz;
+                        int x = origin.X + rx;
+                        int z = origin.Z + rz;
                         int y = world.GetWorldSurfaceHeight(x, z) ?? -1;
                         if (y == -1) { continue; }
                         bool isFlora = seedRand.Next(10) % density == 0;
