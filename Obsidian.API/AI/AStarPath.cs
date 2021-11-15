@@ -54,10 +54,10 @@ namespace Obsidian.API.AI
             this.world = world;
         }
 
-        public List<Vector> GetPath(Vector startPos, Vector targetPos)
+        public List<Vector> GetPath(VectorF startPos, VectorF targetPos)
         {
-            var startNode = new Node(null, startPos);
-            var endNode = new Node(null, targetPos);
+            var startNode = new Node(null, ((Vector)startPos));
+            var endNode = new Node(null, ((Vector)targetPos));
 
             // Out of range?
             var dist = Math.Pow(targetPos.X - startPos.X, 2);
@@ -88,7 +88,7 @@ namespace Obsidian.API.AI
 
                 openList.Remove(currentNode);
                 closedList.Add(currentNode);
-                
+
                 // Made it!
                 if (currentNode == endNode)
                 {
@@ -123,7 +123,7 @@ namespace Obsidian.API.AI
                         continue;
 
                     child.g = currentNode.g + 1;
-                    
+
                     child.h = Math.Pow(child.Position.X - endNode.Position.X, 2);
                     child.h += Math.Pow(child.Position.Y - endNode.Position.Y, 2);
                     child.h += Math.Pow(child.Position.Z - endNode.Position.Z, 2);
@@ -143,10 +143,9 @@ namespace Obsidian.API.AI
         private bool IsValidMove(Vector curPos, Vector nextPos)
         {
             // Does the entity fit?
-            /*for (int y = curPos.Y; y < Math.Max(curPos.Y, nextPos.Y) + EntityHeight; y++)
+            for (int y = curPos.Y; y < Math.Max(curPos.Y, nextPos.Y) + EntityHeight; y++)
             {
-                var b = world.GetBlock(nextPos.X, y, nextPos.Z);
-                if (b.IsMotionBlocking)
+                if (!(world.GetBlock(nextPos.X, y, nextPos.Z) is Block block && !Block.Replaceable.Contains(block.Material)))
                 {
                     return false;
                 }
@@ -156,16 +155,14 @@ namespace Obsidian.API.AI
             bool allAir = true;
             for (int y = nextPos.Y; y >= nextPos.Y - MaxFallHeight; y--)
             {
-                var b = world.GetBlock(nextPos.X, y, nextPos.Z);
-                if (!b.isAir)
+                if (world.GetBlock(nextPos.X, y, nextPos.Z) is Block block)
                 {
-                    allAir = false;
-                    break;
+                    if (Block.Replaceable.Contains(block.Material)) { allAir = false; }
                 }
+                else { return false; }
             }
 
-            if (allAir) 
-                return false;
+            if (allAir) { return false; }
 
             // Can the entity jump/climb high enough?
             int height = nextPos.Y - curPos.Y;
@@ -173,8 +170,8 @@ namespace Obsidian.API.AI
                 return false;
 
             // Can the entity swim?
-            if (world.GetBlock(nextPos).isLiquid && !EntityCanSwim)
-                return false;*/
+            if (world.GetBlock(nextPos).Value.IsFluid && !EntityCanSwim)
+                return false;
 
             return true;
         }

@@ -609,6 +609,28 @@ namespace Obsidian.WorldData
                     });
                 }
             }
+            else if (type == EntityType.Cow)
+            {
+                entity = new Animal
+                {
+                    World = this,
+                    Position = position,
+                    EntityId = this.TotalLoadedEntities() + 1,
+                    Type = type
+                };
+
+                await this.Server.QueueBroadcastPacketAsync(new SpawnLivingEntity
+                {
+                    EntityId = entity.EntityId,
+                    Uuid = entity.Uuid,
+                    Type = type,
+                    Position = position,
+                    Pitch = 0,
+                    Yaw = 0,
+                    HeadPitch = 0,
+                    Velocity = new Velocity(0, 0, 0)
+                });
+            }
             else
             {
                 entity = new Living
