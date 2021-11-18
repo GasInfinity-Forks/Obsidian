@@ -3,6 +3,7 @@
 using Microsoft.Extensions.Logging;
 using Obsidian.API;
 using Obsidian.API.Events;
+using Obsidian.Entities.Item;
 using Obsidian.Nbt;
 using Obsidian.Net;
 using Obsidian.Net.Actions.PlayerInfo;

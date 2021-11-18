@@ -2,6 +2,8 @@
 using Obsidian.API;
 using Obsidian.Blocks;
 using Obsidian.Entities;
+using Obsidian.Entities.Animal;
+using Obsidian.Entities.Item;
 using Obsidian.Nbt;
 using Obsidian.Net.Packets.Play.Clientbound;
 using Obsidian.Utilities;
@@ -614,6 +616,7 @@ namespace Obsidian.WorldData
                 entity = new Animal
                 {
                     World = this,
+                    Server = this.Server,
                     Position = position,
                     EntityId = this.TotalLoadedEntities() + 1,
                     Type = type

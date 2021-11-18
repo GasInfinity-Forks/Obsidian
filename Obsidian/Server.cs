@@ -9,6 +9,7 @@ using Obsidian.Commands.Framework.Entities;
 using Obsidian.Commands.Parsers;
 using Obsidian.Concurrency;
 using Obsidian.Entities;
+using Obsidian.Entities.Item;
 using Obsidian.Events;
 using Obsidian.Logging;
 using Obsidian.Net.Packets;

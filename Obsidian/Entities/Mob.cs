@@ -1,5 +1,7 @@
-﻿using Obsidian.Net;
+﻿using Obsidian.Entities.AI.Goal;
+using Obsidian.Net;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Obsidian.Entities
@@ -7,6 +9,10 @@ namespace Obsidian.Entities
     public class Mob : Living
     {
         public MobBitmask MobBitMask { get; set; } = MobBitmask.None;
+
+        protected GoalSelector goalSelector;
+
+        protected List<BaseGoal> Goals { get; set; } = new();
 
         public override async Task WriteAsync(MinecraftStream stream)
         {

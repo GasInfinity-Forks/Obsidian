@@ -98,12 +98,10 @@ namespace Obsidian.Entities
         {
             var isNewLocation = position != this.Position;
             var isNewRotation = yaw != this.Yaw || pitch != this.Pitch;
-
-            if (isNewLocation)
+            Vector delta = (Vector)(position * 32 - Position * 32) * 128;
+            if (isNewRotation)
             {
-                Vector delta = (Vector)(position * 32 - Position * 32) * 128;
-
-                if (isNewRotation)
+                if (isNewLocation)
                 {
                     this.server.BroadcastPacket(new EntityPositionAndRotation
                     {
@@ -116,25 +114,30 @@ namespace Obsidian.Entities
 
                         OnGround = onGround
                     }, this.EntityId);
-
+                }
+                else
+                {
                     this.server.BroadcastPacket(new EntityHeadLook
                     {
                         EntityId = this.EntityId,
                         HeadYaw = yaw
                     });
                 }
-                else
+            }
+            else if (isNewLocation)
+            {
+                this.server.BroadcastPacket(new EntityPosition
                 {
-                    this.server.BroadcastPacket(new EntityPosition
-                    {
-                        EntityId = this.EntityId,
+                    EntityId = this.EntityId,
 
-                        Delta = delta,
+                    Delta = delta,
 
-                        OnGround = onGround
-                    }, this.EntityId);
-                }
+                    OnGround = onGround
+                }, this.EntityId);
+            }
 
+            if (isNewLocation || isNewRotation)
+            {
                 this.UpdatePosition(position, yaw, pitch, onGround);
             }
 
@@ -296,7 +299,13 @@ namespace Obsidian.Entities
         public virtual Task TickAsync() => Task.CompletedTask;
 
 
-        //TODO check for other entities and handle accordingly 
+        //TODO check for other entities and handle accordingly
+        private VectorF Collide(VectorF newLoc)
+        {
+            // GetBoundingBox();
+            return newLoc;
+        }
+
         public async Task DamageAsync(IEntity source, float amount = 1.0f)
         {
             this.Health -= amount;

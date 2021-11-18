@@ -8,12 +8,14 @@ namespace Obsidian.Entities
     public class PathfinderMob : Mob
     {
 
-        int ActivityTimer = 0;
+        int ActivityTimer = 20 * 5; // 5 sec delay before starting activities.
+
+        bool hasTarget = false;
 
         /// <summary>
         /// Speed in meters/second
         /// </summary>
-        public int speed = 1;
+        public int speed = 2;
 
         /// <summary>
         /// Destination
@@ -29,16 +31,14 @@ namespace Obsidian.Entities
         {
             await base.TickAsync();
 
-            if (VectorF.Distance(Position, this.target) < 2.0f)
+            if (hasTarget)
             {
-                StopMovement();
-                this.target = Position;
+                await MoveTo();
+                if (VectorF.Distance(Position, this.target) < 1.0f)
+                {
+                    hasTarget = false;
+                }
             }
-            else
-            {
-                MoveTo();
-            }
-
 
             if (ActivityTimer != 0)
             {
@@ -46,54 +46,34 @@ namespace Obsidian.Entities
             } 
             else
             {
-                // Look at player
                 var nearby = World.GetEntitiesNear(Position);
                 foreach (var target in nearby)
                 {
                     if (target.Type == API.EntityType.Player)
                     {
                         this.target = target.Position;
-                        ActivityTimer = 20 * 10; // Don't do anything for 10 seconds after this.
+                        hasTarget = true;
                     }
                 }
+                ActivityTimer = 20 * 5; // Don't do anything for 5 seconds after this.
             }
         }
 
-        public void MoveTo()
+        public async Task MoveTo()
         {
             double stepInterval = this.speed / 20.0;
             var theta = GetTheta(this.target);
-            Yaw = Angle.NormalizeToByte((float)((theta * 180 / Math.PI) - 90.0));
-            double newX = stepInterval * Math.Cos(theta);
-            double newZ = stepInterval * Math.Sin(theta);
+            var yaw = Angle.NormalizeToByte((float)((theta * 180 / Math.PI) - 90.0));
+            float newX = (float)(stepInterval * Math.Cos(theta));
+            float newZ = (float)(stepInterval * Math.Sin(theta));
 
-            short deltaX = (short)((newX * 32) * 128);
-            short deltaZ = (short)((newZ * 32) * 128);
-            short deltaY = 0;
-
-            LastPosition = Position;
-            World.Server.BroadcastPacket(new EntityHeadLook
-            {
-                EntityId = EntityId,
-                HeadYaw = Yaw
-            });
-
-            World.Server.BroadcastPacket(new EntityPositionAndRotation
-            {
-                EntityId = EntityId,
-                Delta = new Vector(deltaX, deltaY, deltaZ),
-                Yaw = Yaw
-            });
+            var deltaPos = new VectorF(newX, 0, newZ);
+            await base.UpdateAsync(deltaPos + Position, yaw, this.Pitch, true);
         }
 
         public void StopMovement()
         {
-            World.Server.BroadcastPacket(new EntityPositionAndRotation
-            {
-                EntityId = EntityId,
-                Delta = Vector.Zero,
-                Yaw = Yaw
-            });
+
         }
 
         public void LookAt(VectorF target)

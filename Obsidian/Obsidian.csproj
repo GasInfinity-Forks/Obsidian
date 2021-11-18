@@ -109,4 +109,13 @@
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Entities\Global\" />
+    <Folder Include="Entities\Monster\" />
+    <Folder Include="Entities\Schedule\" />
+    <Folder Include="Entities\Raid\" />
+    <Folder Include="Entities\Player\" />
+    <Folder Include="Entities\NPC\" />
+  </ItemGroup>
 </Project>

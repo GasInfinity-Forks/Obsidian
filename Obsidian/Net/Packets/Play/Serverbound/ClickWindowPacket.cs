@@ -1,6 +1,7 @@
 ﻿using Obsidian.API;
 using Obsidian.API.Events;
 using Obsidian.Entities;
+using Obsidian.Entities.Item;
 using Obsidian.Net.Packets.Play.Clientbound;
 using Obsidian.Serialization.Attributes;
 using Obsidian.Utilities;
