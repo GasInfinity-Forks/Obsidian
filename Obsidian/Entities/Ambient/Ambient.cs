@@ -1,6 +1,5 @@
-﻿namespace Obsidian.Entities.Ambient
+﻿namespace Obsidian.Entities.Ambient;
+
+public class Ambient : Mob
 {
-    public class Ambient : Mob
-    {
-    }
 }

@@ -1,7 +1,6 @@
-﻿namespace Obsidian.Entities.Projectile
-{
-    public class Throwable : Entity
-    {
+﻿namespace Obsidian.Entities.Projectile;
 
-    }
+public class Throwable : Entity
+{
+
 }

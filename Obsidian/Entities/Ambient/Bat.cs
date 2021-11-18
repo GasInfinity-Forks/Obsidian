@@ -1,7 +1,6 @@
-﻿namespace Obsidian.Entities.Ambient
+﻿namespace Obsidian.Entities.Ambient;
+
+public class Bat : Ambient
 {
-    public class Bat : Ambient
-    {
-        public bool IsHanging { get; }
-    }
+    public bool IsHanging { get; }
 }

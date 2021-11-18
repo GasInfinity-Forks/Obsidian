@@ -1,7 +1,6 @@
-﻿namespace Obsidian.Entities.Projectile
+﻿namespace Obsidian.Entities.Projectile;
+
+public class TippedArrow : Arrow
 {
-    public class TippedArrow : Arrow
-    {
-        public int Color { get; private set; }
-    }
+    public int Color { get; private set; }
 }

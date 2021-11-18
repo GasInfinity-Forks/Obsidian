@@ -1,6 +1,5 @@
-﻿namespace Obsidian.Entities.Fishing
+﻿namespace Obsidian.Entities.Fishing;
+
+public class FishingHook : Entity
 {
-    public class FishingHook : Entity
-    {
-    }
 }

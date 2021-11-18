@@ -1,12 +1,9 @@
-﻿using Obsidian.API;
+﻿namespace Obsidian.WorldData.Generators.Overworld.Features.Flora;
 
-namespace Obsidian.WorldData.Generators.Overworld.Features.Flora
+public class CornflowerFlora : BaseFlora
 {
-    public class CornflowerFlora : BaseFlora
+    public CornflowerFlora(World world) : base(world, Material.Cornflower)
     {
-        public CornflowerFlora(World world) : base(world, Material.Cornflower)
-        {
 
-        }
     }
 }

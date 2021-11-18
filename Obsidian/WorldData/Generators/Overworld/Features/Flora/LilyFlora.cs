@@ -1,12 +1,9 @@
-﻿using Obsidian.API;
+﻿namespace Obsidian.WorldData.Generators.Overworld.Features.Flora;
 
-namespace Obsidian.WorldData.Generators.Overworld.Features.Flora
+public class LilyFlora : BaseFlora
 {
-    public class LilyFlora : BaseFlora
+    public LilyFlora(World world) : base(world, Material.LilyOfTheValley)
     {
-        public LilyFlora(World world) : base(world, Material.LilyOfTheValley)
-        {
 
-        }
     }
 }

@@ -1,12 +1,9 @@
-﻿using Obsidian.API;
+﻿namespace Obsidian.WorldData.Generators.Overworld.Features.Flora;
 
-namespace Obsidian.WorldData.Generators.Overworld.Features.Flora
+public class SunflowerFlora : BaseTallFlora
 {
-    public class SunflowerFlora : BaseTallFlora
+    public SunflowerFlora(World world) : base(world, Material.Sunflower)
     {
-        public SunflowerFlora(World world) : base(world, Material.Sunflower)
-        {
 
-        }
     }
 }

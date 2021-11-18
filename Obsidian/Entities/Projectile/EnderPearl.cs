@@ -1,6 +1,5 @@
-﻿namespace Obsidian.Entities.Projectile
+﻿namespace Obsidian.Entities.Projectile;
+
+public class EnderPearl : Throwable
 {
-    public class EnderPearl : Throwable
-    {
-    }
 }

@@ -1,6 +1,6 @@
-﻿namespace Obsidian.Entities.AI.Goal
+﻿namespace Obsidian.Entities.AI.Goal;
+
+
+public class GoalSelector
 {
-    public class GoalSelector
-    {
-    }
 }

@@ -1,8 +1,7 @@
-﻿namespace Obsidian.Entities.Projectile
+﻿namespace Obsidian.Entities.Projectile;
+
+public class Arrow : Entity
 {
-    public class Arrow : Entity
-    {
-        public bool Crit { get; private set; }
-        public bool NoClip { get; private set; }
-    }
+    public bool Crit { get; private set; }
+    public bool NoClip { get; private set; }
 }
