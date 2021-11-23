@@ -4,17 +4,29 @@ namespace Obsidian.Entities.AI.Goal;
 
 public class RandomLookAroundGoal : BaseGoal
 {
-    protected readonly PathfinderMob mob;
+    protected readonly Mob mob;
 
-    protected readonly float speed;
+    protected double relX, relZ = 0.0;
 
-    protected readonly int interval;
+    protected double lookTime = 20;
 
-    public RandomLookAroundGoal(PathfinderMob mob, float speed, int interval = 120)
+    public RandomLookAroundGoal(Mob mob)
     {
         this.mob = mob;
-        this.speed = speed;
-        this.interval = interval;
-        Flags = new ConcurrentHashSet<Flag> { BaseGoal.Flag.MOVE };
+        Flags = new ConcurrentHashSet<Flag> { BaseGoal.Flag.MOVE, BaseGoal.Flag.LOOK };
+    }
+
+    public override void Start()
+    {
+        var randAngle = new Random().Next() * Math.PI * 2.0;
+        this.relX = Math.Cos(randAngle);
+        this.relZ = Math.Sin(randAngle);
+        this.lookTime += new Random().Next(20);
+    }
+
+    public override void Tick()
+    {
+        --this.lookTime;
+        this.mob.LookAt(new VectorF((float)relX, 0, (float)relZ) + this.mob.Position);
     }
 }

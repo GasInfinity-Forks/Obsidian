@@ -1,4 +1,5 @@
-﻿using Obsidian.Net;
+﻿using Obsidian.Entities.AI;
+using Obsidian.Net;
 
 namespace Obsidian.Entities;
 
@@ -16,6 +17,8 @@ public class Living : Entity, ILiving
 
     public Vector BedBlockPosition { get; set; }
     public bool Alive => this.Health > 0f;
+
+    private readonly Brain brain = new();
 
     public override async Task WriteAsync(MinecraftStream stream)
     {

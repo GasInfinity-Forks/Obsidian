@@ -7,13 +7,33 @@ public class Mob : Living
 {
     public MobBitmask MobBitMask { get; set; } = MobBitmask.None;
 
-        protected GoalSelector goalSelector;
+    protected readonly GoalSelector goalSelector;
 
-        protected List<BaseGoal> Goals { get; set; } = new();
+    protected List<BaseGoal> Goals { get; set; } = new();
 
-        public override async Task WriteAsync(MinecraftStream stream)
-        {
-            await base.WriteAsync(stream);
+    public Mob() : base()
+    {
+        goalSelector = new(this);
+    }
+
+    public void DoServerAi()
+    {
+# checkDespawn();
+# sensing.Tick();
+# targetSelector.Tick();
+        goalSelector.Tick();
+# navigation.Tick();
+# customServerAiStep();
+# moveControl.Tick();
+# lookControl.Tick();
+# jumpControl.Tick();
+    }
+
+
+
+    public override async Task WriteAsync(MinecraftStream stream)
+    {
+        await base.WriteAsync(stream);
 
         await stream.WriteEntityMetdata(14, EntityMetadataType.Byte, this.MobBitMask);
     }
@@ -25,6 +45,8 @@ public class Mob : Living
         stream.WriteEntityMetadataType(14, EntityMetadataType.Byte);
         stream.WriteByte((byte)MobBitMask);
     }
+
+
 }
 
 [Flags]
