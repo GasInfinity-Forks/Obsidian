@@ -56,6 +56,11 @@ public class Entity : IEquatable<Entity>, IEntity
     public bool Swimming { get; set; }
     public bool FlyingWithElytra { get; set; }
 
+    public float HeadRotSpeed { get; set; }
+
+    public float MaxHeadXRot { get; set; }
+    public float MaxHeadYRot { get; set; }
+
     public INavigator Navigator { get; set; }
     public IGoalController GoalController { get; set; }
 
@@ -211,6 +216,8 @@ public class Entity : IEquatable<Entity>, IEntity
         float cosPitch = MathF.Cos(pitch);
         return new(-cosPitch * MathF.Sin(yaw), -MathF.Sin(pitch), cosPitch * MathF.Cos(yaw));
     }
+
+    internal float GetEyeHeight() => 1.0f;
 
     public Task RemoveAsync() => this.World.DestroyEntityAsync(this);
 

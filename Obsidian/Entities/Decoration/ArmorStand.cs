@@ -1,6 +1,6 @@
 ﻿namespace Obsidian.Entities.Decoration;
 
-public class ArmorStand : Living
+public class ArmorStand : LivingEntity
 {
     public StandProperties StandProperties { get; set; }
 

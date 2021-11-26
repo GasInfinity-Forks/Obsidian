@@ -12,7 +12,7 @@ using System.IO;
 
 namespace Obsidian.Entities;
 
-public class Player : Living, IPlayer
+public class Player : LivingEntity, IPlayer
 {
     internal readonly Client client;
 

@@ -4,9 +4,10 @@ namespace Obsidian.Entities.AI.Goal;
 
 public class BaseGoal
 {
-    protected ConcurrentHashSet<Flag> Flags { get; set; } = new();
+    internal ConcurrentHashSet<Flag> Flags { get; set; } = new();
 
     public bool CanUse { get; set; } = true;
+    public bool IsInterruptable { get; set; } = true;
 
     public virtual void Start() { }
 

@@ -3,7 +3,7 @@ using Obsidian.Net;
 
 namespace Obsidian.Entities;
 
-public class Living : Entity, ILiving
+public class LivingEntity : Entity, ILiving
 {
     public LivingBitMask LivingBitMask { get; set; }
 
@@ -19,6 +19,33 @@ public class Living : Entity, ILiving
     public bool Alive => this.Health > 0f;
 
     private readonly Brain brain = new();
+
+    internal float xRot = 0.0f;
+    internal float yHeadRot = 0.0f;
+    internal float yBodyRot = 0.0f;
+
+    private int lerpSteps = 0;
+    private double lerpX, lerpY, lerpZ = 0;
+    private int noJumpDelay = 0;
+
+    public void aiStep()
+    {
+        if (noJumpDelay > 0) --noJumpDelay;
+
+        if (lerpSteps > 0)
+        {
+            var lerpedX = Position.X + (lerpX - Position.X) / (double)lerpSteps;
+            var lerpedY = Position.Y + (lerpY - Position.Y) / (double)lerpSteps;
+            var lerpedZ = Position.Z + (lerpZ - Position.Z) / (double)lerpSteps;
+        }
+
+        ServerAiStep();
+    }
+
+    internal virtual void ServerAiStep()
+    {
+
+    }
 
     public override async Task WriteAsync(MinecraftStream stream)
     {
@@ -60,7 +87,7 @@ public class Living : Entity, ILiving
 
         stream.WriteEntityMetadataType(12, EntityMetadataType.VarInt);
         stream.WriteVarInt(AbsorbtionAmount);
-
+        
         stream.WriteEntityMetadataType(13, EntityMetadataType.OptPosition);
         stream.WriteBoolean(BedBlockPosition != default);
         if (BedBlockPosition != default)

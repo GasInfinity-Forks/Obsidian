@@ -629,7 +629,7 @@ public class World : IWorld
         }
         else
         {
-            entity = new Living
+            entity = new LivingEntity
             {
                 Position = position,
                 EntityId = this.TotalLoadedEntities() + 1,

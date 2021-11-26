@@ -1,34 +1,64 @@
-﻿using Obsidian.Entities.AI.Goal;
+﻿using Obsidian.Entities.AI.Control;
+using Obsidian.Entities.AI.Goal;
 using Obsidian.Net;
 
 namespace Obsidian.Entities;
 
-public class Mob : Living
+public class Mob : LivingEntity
 {
     public MobBitmask MobBitMask { get; set; } = MobBitmask.None;
 
     protected readonly GoalSelector goalSelector;
 
+    protected readonly LookControl lookControl;
+
     protected List<BaseGoal> Goals { get; set; } = new();
 
     public Mob() : base()
     {
-        goalSelector = new(this);
+        goalSelector = new();
+        lookControl = new(this);
+        MaxHeadXRot = 40;
+        MaxHeadYRot = 75;
+        HeadRotSpeed = 10;
     }
 
-    public void DoServerAi()
+    public void Tick()
     {
-# checkDespawn();
-# sensing.Tick();
-# targetSelector.Tick();
-        goalSelector.Tick();
-# navigation.Tick();
-# customServerAiStep();
-# moveControl.Tick();
-# lookControl.Tick();
-# jumpControl.Tick();
+        // base.Tick();
+        UpdateControlFlags();
+
     }
 
+    public void UpdateControlFlags()
+    {
+        // check in boat
+        // check controlling passenger
+        bool notInBoat = true;
+        bool notPassenger = true;
+
+        goalSelector.SetControlFlag(BaseGoal.Flag.MOVE, notPassenger);
+        goalSelector.SetControlFlag(BaseGoal.Flag.JUMP, notPassenger && notInBoat);
+        goalSelector.SetControlFlag(BaseGoal.Flag.LOOK, notPassenger);
+    }
+
+    internal override void ServerAiStep()
+    {
+        //checkDespawn();
+        //sensing.Tick();
+        //targetSelector.Tick();
+        goalSelector.Tick();
+        //navigation.Tick();
+        CustomServerAiStep();
+        //moveControl.Tick();
+        lookControl.Tick();
+        //jumpControl.Tick();
+    }
+
+    protected virtual void CustomServerAiStep()
+    {
+
+    }
 
 
     public override async Task WriteAsync(MinecraftStream stream)
