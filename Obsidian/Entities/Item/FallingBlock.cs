@@ -22,6 +22,7 @@ public class FallingBlock : Entity
         LastPosition = Position;
         AliveTime = 0;
         DeltaPosition = new VectorF(0F, 0F, 0F);
+        Type = EntityType.FallingBlock;
     }
 
     public async override Task TickAsync()

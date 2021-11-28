@@ -73,30 +73,16 @@ public class LookControl
 
     private float RotateTowards(float yHeadRot, float xRot, float maxRotAngle)
     {
-        float degreesDiff = DegreesDiff(yHeadRot, xRot);
+        float degreesDiff = NumericsHelper.DegreesDiff(yHeadRot, xRot);
         float degreesClamped = Math.Clamp(degreesDiff, -maxRotAngle, maxRotAngle);
         return yHeadRot + degreesClamped;
     }
 
     private float RotateTowardsIfNecessary(float yHeadRot, float yBodyRot, float maxRotAngle)
     {
-        float degreesDiff = DegreesDiff(yHeadRot, yBodyRot);
+        float degreesDiff = NumericsHelper.DegreesDiff(yHeadRot, yBodyRot);
         float degreesClamped = Math.Clamp(degreesDiff, -maxRotAngle, maxRotAngle);
         return yHeadRot - degreesClamped;
     }
 
-    private float DegreesDiff(float a, float b) => WrapDegrees(a - b);
-    private float WrapDegrees(float a)
-    {
-        var a1 = a % 360.0f;
-        if (a1 >= 180.0f)
-        {
-            a1 -= 360.0f;
-        }
-        if (a1 < -180.0f)
-        {
-            a1 += 360.0f;
-        }
-        return a1;
-    }
 }

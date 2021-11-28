@@ -13,7 +13,7 @@ public interface IWorld
     public void SetBlock(Vector location, Block block);
     public void SetBlock(int x, int y, int z, Block block);
 
-    public Task<IEntity> SpawnEntityAsync(VectorF position, EntityType type);
+    public Task<IEntity> SpawnEntityAsync(VectorF position, EntityType entityType);
     public Task SpawnExperienceOrbs(VectorF position, short count);
     public Task SpawnPainting(Vector position, Painting painting, PaintingDirection direction, Guid uuid = default);
 }

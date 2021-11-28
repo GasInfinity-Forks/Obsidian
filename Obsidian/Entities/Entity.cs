@@ -22,6 +22,10 @@ public class Entity : IEquatable<Entity>, IEntity
 
     public VectorF Position { get; set; }
 
+    public VectorF DeltaMovement { get; set; }
+
+    public Rotation Rotation { get; set; }
+
     public Angle Pitch { get; set; }
 
     public Angle Yaw { get; set; }
@@ -35,7 +39,7 @@ public class Entity : IEquatable<Entity>, IEntity
 
     public int PowderedSnowTicks { get; set; } = 0;
 
-    public EntityType Type { get; set; }
+    public EntityType Type { get; protected set; }
 
     public int Air { get; set; } = 300;
 

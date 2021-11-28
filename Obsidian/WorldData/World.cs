@@ -538,7 +538,6 @@ public class World : IWorld
         position.Z += 0.5f;
         FallingBlock entity = new()
         {
-            Type = EntityType.FallingBlock,
             Position = position,
             EntityId = TotalLoadedEntities() + 1,
             Server = Server,
@@ -569,48 +568,29 @@ public class World : IWorld
         // SpawnerMinecart, TntMinecart, Painting, Tnt, ShulkerBullet, SpectralArrow, EnderPearl, Snowball, SmallFireball,
         // Egg, ExperienceBottle, Potion, Trident, FishingBobber, EyeOfEnder
 
+        var entity = EntityFactory.GetEntity(type);
+        if (entity is null)
+        {
+
+            this.Server.Logger.LogInformation($"Invalid or unimplemented entity: {type}");
+            return new Entity();
+        }
+
         if (type == EntityType.FallingBlock)
         {
             return SpawnFallingBlock(position + (0, 20, 0), Material.Sand);
         }
 
-        Entity entity;
+        entity.Position = position;
+        entity.Server = Server;
+        entity.World = this;
+        entity.EntityId = TotalLoadedEntities() + 1;
+
         if (type.IsNonLiving())
         {
-            entity = new Entity
-            {
-                Type = type,
-                Position = position,
-                EntityId = this.TotalLoadedEntities() + 1,
-                Server = this.Server
-            };
-
             if (type == EntityType.ExperienceOrb || type == EntityType.ExperienceBottle)
             {
-                //TODO
-            }
-            else if (type == EntityType.Cow)
-            {
-                entity = new Animal
-                {
-                    World = this,
-                    Server = this.Server,
-                    Position = position,
-                    EntityId = this.TotalLoadedEntities() + 1,
-                    Type = type
-                };
 
-                await this.Server.QueueBroadcastPacketAsync(new SpawnLivingEntity
-                {
-                    EntityId = entity.EntityId,
-                    Uuid = entity.Uuid,
-                    Type = type,
-                    Position = position,
-                    Pitch = 0,
-                    Yaw = 0,
-                    HeadPitch = 0,
-                    Velocity = new Velocity(0, 0, 0)
-                });
             }
             else
             {
@@ -629,22 +609,17 @@ public class World : IWorld
         }
         else
         {
-            entity = new LivingEntity
-            {
-                Position = position,
-                EntityId = this.TotalLoadedEntities() + 1,
-                Type = type
-            };
+            var livingEntity = (LivingEntity)entity;
 
             await this.Server.QueueBroadcastPacketAsync(new SpawnLivingEntity
             {
-                EntityId = entity.EntityId,
-                Uuid = entity.Uuid,
-                Type = type,
-                Position = position,
-                Pitch = 0,
-                Yaw = 0,
-                HeadPitch = 0,
+                EntityId = livingEntity.EntityId,
+                Uuid = livingEntity.Uuid,
+                Type = livingEntity.Type,
+                Position = livingEntity.Position,
+                Pitch = livingEntity.Pitch,
+                Yaw = livingEntity.Yaw,
+                HeadPitch = livingEntity.yHeadRot,
                 Velocity = new Velocity(0, 0, 0)
             });
         }

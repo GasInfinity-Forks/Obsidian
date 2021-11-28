@@ -342,6 +342,8 @@ public class MainCommandModule
     public async Task SpawnEntityAsync(CommandContext context, string entityType)
     {
         var player = context.Player;
+        if (player is null) return;
+
         if (Enum.TryParse<EntityType>(entityType, true, out var type))
         {
             await player.WorldLocation.SpawnEntityAsync(player.Position, type);
