@@ -2,4 +2,8 @@
 
 public class Egg : Throwable
 {
+    public Egg()
+    {
+        Type = EntityType.Egg;
+    }
 }

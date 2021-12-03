@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Obsidian.Entities.AI.Goal;
 
-namespace Obsidian.Entities.Animal
+namespace Obsidian.Entities.Animal;
+
+public class Cow : Animal
 {
-    public class Cow : Animal
+    public Cow()
     {
-
+        Type = EntityType.Cow;
+        Goals.Add(new RandomLookAroundGoal(this));
     }
 }

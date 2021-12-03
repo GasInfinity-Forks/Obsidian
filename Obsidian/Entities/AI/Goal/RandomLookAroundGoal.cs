@@ -27,6 +27,6 @@ public class RandomLookAroundGoal : BaseGoal
     public override void Tick()
     {
         --this.lookTime;
-        this.mob.LookAt(new VectorF((float)relX, 0, (float)relZ) + this.mob.Position);
+        //this.mob.LookAt(new VectorF((float)relX, 0, (float)relZ) + this.mob.Position);
     }
 }

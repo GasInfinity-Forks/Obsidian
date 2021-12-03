@@ -571,8 +571,7 @@ public class World : IWorld
         var entity = EntityFactory.GetEntity(type);
         if (entity is null)
         {
-
-            this.Server.Logger.LogInformation($"Invalid or unimplemented entity: {type}");
+            Server.Logger.LogInformation($"Invalid or unimplemented entity: {type}");
             return new Entity();
         }
 
@@ -594,7 +593,7 @@ public class World : IWorld
             }
             else
             {
-                await this.Server.QueueBroadcastPacketAsync(new SpawnEntityPacket
+                await Server.QueueBroadcastPacketAsync(new SpawnEntityPacket
                 {
                     EntityId = entity.EntityId,
                     Uuid = entity.Uuid,
@@ -611,7 +610,7 @@ public class World : IWorld
         {
             var livingEntity = (LivingEntity)entity;
 
-            await this.Server.QueueBroadcastPacketAsync(new SpawnLivingEntity
+            await Server.QueueBroadcastPacketAsync(new SpawnLivingEntity
             {
                 EntityId = livingEntity.EntityId,
                 Uuid = livingEntity.Uuid,
@@ -624,7 +623,7 @@ public class World : IWorld
             });
         }
 
-        this.TryAddEntity(entity);
+        TryAddEntity(entity);
 
         return entity;
     }

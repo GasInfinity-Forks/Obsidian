@@ -13,6 +13,11 @@ public class Boat : Entity
     public bool RightPaddleTurning { get; private set; }
 
     public int SplashTimer { get; private set; }
+
+    public Boat()
+    {
+        Type = EntityType.Boat;
+    }
 }
 
 public enum BoatType : byte

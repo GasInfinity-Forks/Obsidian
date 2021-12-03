@@ -18,13 +18,15 @@ public class Entity : IEquatable<Entity>, IEntity
     #region Location properties
     internal int TeleportId { get; set; }
 
-    public VectorF LastPosition { get; set; }
-
     public VectorF Position { get; set; }
+
+    public VectorF LastPosition { get; set; }
 
     public VectorF DeltaMovement { get; set; }
 
     public Rotation Rotation { get; set; }
+
+    public Rotation LastRotation { get; set; }
 
     public Angle Pitch { get; set; }
 
@@ -60,6 +62,12 @@ public class Entity : IEquatable<Entity>, IEntity
     public bool Swimming { get; set; }
     public bool FlyingWithElytra { get; set; }
 
+    public bool IsInWater { get; set; } = false;
+
+    public bool IsInLava { get; set; } = false;
+
+    public float FallDistance { get; set; } = 3.0f;
+
     public float HeadRotSpeed { get; set; }
 
     public float MaxHeadXRot { get; set; }
@@ -67,6 +75,11 @@ public class Entity : IEquatable<Entity>, IEntity
 
     public INavigator Navigator { get; set; }
     public IGoalController GoalController { get; set; }
+
+    protected double xo, yo, zo = 0;
+
+    internal float xRot, yRot = 0.0f;
+    internal float xRotO, yRotO = 0.0f;
 
     public Entity()
     {
@@ -98,52 +111,52 @@ public class Entity : IEquatable<Entity>, IEntity
     }
 
 
-        internal virtual Task UpdateAsync(VectorF position, Angle yaw, Angle pitch, bool onGround)
+    internal virtual Task UpdateAsync(VectorF position, Angle yaw, Angle pitch, bool onGround)
+    {
+        var isNewLocation = position != this.Position;
+        var isNewRotation = yaw != this.Yaw || pitch != this.Pitch;
+        Vector delta = (Vector)(position * 32 - Position * 32) * 128;
+        if (isNewRotation)
         {
-            var isNewLocation = position != this.Position;
-            var isNewRotation = yaw != this.Yaw || pitch != this.Pitch;
-            Vector delta = (Vector)(position * 32 - Position * 32) * 128;
-            if (isNewRotation)
+            if (isNewLocation)
             {
-                if (isNewLocation)
+                this.server.BroadcastPacket(new EntityPositionAndRotation
                 {
-                    this.server.BroadcastPacket(new EntityPositionAndRotation
-                    {
-                        EntityId = this.EntityId,
+                    EntityId = this.EntityId,
 
                     Delta = delta,
 
                     Yaw = yaw,
                     Pitch = pitch,
 
-                        OnGround = onGround
-                    }, this.EntityId);
-                }
-                else
-                {
-                    this.server.BroadcastPacket(new EntityHeadLook
-                    {
-                        EntityId = this.EntityId,
-                        HeadYaw = yaw
-                    });
-                }
-            }
-            else if (isNewLocation)
-            {
-                this.server.BroadcastPacket(new EntityPosition
-                {
-                    EntityId = this.EntityId,
-
-                    Delta = delta,
-
                     OnGround = onGround
                 }, this.EntityId);
             }
-
-            if (isNewLocation || isNewRotation)
+            else
             {
-                this.UpdatePosition(position, yaw, pitch, onGround);
+                this.server.BroadcastPacket(new EntityHeadLook
+                {
+                    EntityId = this.EntityId,
+                    HeadYaw = yaw
+                });
             }
+        }
+        else if (isNewLocation)
+        {
+            this.server.BroadcastPacket(new EntityPosition
+            {
+                EntityId = this.EntityId,
+
+                Delta = delta,
+
+                OnGround = onGround
+            }, this.EntityId);
+        }
+
+        if (isNewLocation || isNewRotation)
+        {
+            this.UpdatePosition(position, yaw, pitch, onGround);
+        }
 
         return Task.CompletedTask;
     }
@@ -222,6 +235,10 @@ public class Entity : IEquatable<Entity>, IEntity
     }
 
     internal float GetEyeHeight() => 1.0f;
+
+    // this.isFree(this.getBoundingBox().move(var1, var3, var5))
+    // this.level.noCollision(this, var1) && !this.level.containsAnyLiquid(var1);
+    internal bool IsFree(double x, double y, double z) => true;
 
     public Task RemoveAsync() => this.World.DestroyEntityAsync(this);
 
@@ -302,19 +319,26 @@ public class Entity : IEquatable<Entity>, IEntity
 
     public IEnumerable<IEntity> GetEntitiesNear(float distance) => this.World.GetEntitiesNear(this.Position, distance).Where(x => x != this);
 
-    public virtual Task TickAsync() => Task.CompletedTask;
+    public virtual Task TickAsync()
+    {
+        this.xo = this.Position.X;
+        this.yo = this.Position.Y;
+        this.zo = this.Position.Z;
+
+        return Task.CompletedTask;
+    }
 
 
-        //TODO check for other entities and handle accordingly
-        private VectorF Collide(VectorF newLoc)
-        {
-            // GetBoundingBox();
-            return newLoc;
-        }
+    //TODO check for other entities and handle accordingly
+    private VectorF Collide(VectorF newLoc)
+    {
+        // GetBoundingBox();
+        return newLoc;
+    }
 
-        public async Task DamageAsync(IEntity source, float amount = 1.0f)
-        {
-            this.Health -= amount;
+    public async Task DamageAsync(IEntity source, float amount = 1.0f)
+    {
+        this.Health -= amount;
 
         if (this is ILiving living)
         {

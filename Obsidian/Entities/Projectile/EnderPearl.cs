@@ -2,4 +2,8 @@
 
 public class EnderPearl : Throwable
 {
+    public EnderPearl()
+    {
+        Type = EntityType.EnderPearl;
+    }
 }

@@ -10,6 +10,11 @@ public class ArmorStand : LivingEntity
     public Rotation RightArm { get; set; }
     public Rotation LeftLeg { get; set; }
     public Rotation RightLeft { get; set; }
+
+    public ArmorStand()
+    {
+        Type = EntityType.ArmorStand;
+    }
 }
 
 public struct StandProperties

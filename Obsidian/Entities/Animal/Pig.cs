@@ -8,6 +8,12 @@ public class Pig : Animal
 
     public int TotalTimeBoost { get; set; }
 
+    public Pig()
+    {
+        Type = EntityType.Pig;
+
+    }
+
     public override async Task WriteAsync(MinecraftStream stream)
     {
         await base.WriteAsync(stream);
