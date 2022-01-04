@@ -364,7 +364,7 @@ public class MainCommandModule
         server.BroadcastMessage($"Server stopped by {ChatColor.Red}{Context.Player?.Username ?? Context.Sender.ToString()}{ChatColor.Reset}.");
         await Task.Run(() =>
         {
-            server.StopServer();
+            server.Stop();
         });
     }
 
@@ -376,9 +376,9 @@ public class MainCommandModule
     [CommandOverload]
     public async Task TimeAsync(CommandContext Context, int time)
     {
-        var player = Context.Player as Player;
-        player.client.SendPacket(new TimeUpdate(0, time));
-        await player.SendMessageAsync($"Time set to {time}");
+        var server = Context.Server as Server;
+        server.World.Data.DayTime = time;
+        await Context.Player.SendMessageAsync($"Time set to {time}");
     }
 
     [CommandGroup("permission")]
@@ -425,6 +425,15 @@ public class MainCommandModule
                 await ctx.Player.SendMessageAsync($"Failed revoking {ChatColor.Red}{permission}{ChatColor.Reset}.");
             }
         }
+    }
+
+    [Command("toggleweather", "weather")]
+    [RequirePermission(permissions: "obsidian.weather")]
+    public async Task WeatherAsync(CommandContext ctx)
+    {
+        var server = (Server)ctx.Server;
+        server.World.Data.RainTime = 0;
+        await ctx.Sender.SendMessageAsync("Toggled weather for this world.");
     }
 
 #if DEBUG

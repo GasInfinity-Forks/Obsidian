@@ -43,7 +43,7 @@ public class FallingBlock : Entity
         if (!checkedBlocks.Contains(upcomingBlockPos))
         {
             checkedBlocks.Add(upcomingBlockPos);
-            var upcomingBlock = server.World.GetBlock(upcomingBlockPos);
+            var upcomingBlock = await server.World.GetBlockAsync(upcomingBlockPos);
 
             if (upcomingBlock is Block block &&
                 !block.IsAir &&
@@ -61,7 +61,7 @@ public class FallingBlock : Entity
     private async Task ConvertToBlock(Vector loc)
     {
         var block = new Block(BlockMaterial);
-        server.World.SetBlockUntracked(loc, block);
+        server.World.SetBlockUntrackedAsync(loc, block);
 
         server.BroadcastBlockChange(block, loc);
 

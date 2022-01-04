@@ -15,7 +15,7 @@ using Obsidian.Net.Packets;
 using Obsidian.Net.Packets.Play.Clientbound;
 using Obsidian.Net.Packets.Play.Serverbound;
 using Obsidian.Plugins;
-using Obsidian.Utilities.Debug;
+using Obsidian.Utilities.Debugging;
 using Obsidian.Utilities.Registry;
 using Obsidian.WorldData;
 using Obsidian.WorldData.Generators;
@@ -30,8 +30,8 @@ namespace Obsidian;
 
 public partial class Server : IServer
 {
-    public const ProtocolVersion protocol = ProtocolVersion.v1_17_1;
-    public ProtocolVersion Protocol => protocol;
+    public static readonly ProtocolVersion DefaultProtocol = ProtocolVersion.v1_18;
+    public ProtocolVersion Protocol => DefaultProtocol;
 
     public int Tps { get; private set; }
     public DateTimeOffset StartTime { get; private set; }
@@ -45,7 +45,7 @@ public partial class Server : IServer
     public ConcurrentDictionary<Guid, Player> OnlinePlayers { get; } = new();
     public ConcurrentDictionary<string, World> Worlds { get; } = new();
     public Dictionary<string, WorldGenerator> WorldGenerators { get; } = new();
-    internal ConcurrentDictionary<Guid, Inventory> CachedWindows { get; } = new();
+
     public HashSet<string> RegisteredChannels { get; } = new();
     public CommandHandler CommandsHandler { get; }
 
@@ -124,7 +124,7 @@ public partial class Server : IServer
                 while (!cts.IsCancellationRequested)
                 {
                     await Task.Delay(1500, cts.Token); // TODO (.NET 6), use PeriodicTimer
-                        byte[] motd = Encoding.UTF8.GetBytes($"[MOTD]{config.Motd.Replace('[', '(').Replace(']', ')')}[/MOTD][AD]{config.Port}[/AD]");
+                    byte[] motd = Encoding.UTF8.GetBytes($"[MOTD]{config.Motd.Replace('[', '(').Replace(']', ')')}[/MOTD][AD]{config.Port}[/AD]");
                     await udpClient.SendAsync(motd, motd.Length);
                 }
             });
@@ -210,7 +210,7 @@ public partial class Server : IServer
     /// <summary>
     /// Starts this server asynchronously.
     /// </summary>
-    public async Task StartServerAsync()
+    public async Task RunAsync()
     {
         StartTime = DateTimeOffset.Now;
 
@@ -221,7 +221,7 @@ public partial class Server : IServer
         if (Config.MulitplayerDebugMode && Config.OnlineMode)
         {
             Logger.LogError("Incompatible Config: Multiplayer debug mode can't be enabled at the same time as online mode since usernames will be overwritten");
-            StopServer();
+            Stop();
             return;
         }
 
@@ -266,32 +266,50 @@ public partial class Server : IServer
 
         Registry.RegisterCommands(this);
 
-        _ = Task.Run(LoopAsync);
-
-        _ = Task.Run(ServerSaveAsync);
-
-        Logger.LogInformation($"Listening for new clients...");
-
         loadTimeStopwatch.Stop();
-
         Logger.LogInformation($"Server loaded in {loadTimeStopwatch.Elapsed}");
 
+        Logger.LogInformation($"Listening for new clients...");
+        try
+        {
+            await Task.WhenAll(AcceptClientsAsync(), LoopAsync(), ServerSaveAsync());
+        }
+        catch (TaskCanceledException)
+        {
+        }
+
+        Logger.LogDebug("Flushing regions");
+        await World.FlushRegionsAsync();
+
+        Logger.LogWarning("Server is shutting down...");
+    }
+
+    private async Task AcceptClientsAsync()
+    {
         tcpListener.Start();
 
         while (!cts.IsCancellationRequested)
         {
-            var tcp = await tcpListener.AcceptTcpClientAsync();
+            TcpClient tcp;
+            try
+            {
+                tcp = await tcpListener.AcceptTcpClientAsync();
+            }
+            catch (Exception e)
+            {
+                Logger.LogError(e, "Listening for clients encountered an exception");
+                break;
+            }
+
             Logger.LogDebug($"New connection from client with IP {tcp.Client.RemoteEndPoint}");
 
-            var client = new Client(tcp, Config, Math.Max(0, clients.Count + World.TotalLoadedEntities()), this);
+            var client = new Client(tcp, Config, Math.Max(0, clients.Count + World.GetTotalLoadedEntities()), this);
             clients.Add(client);
 
             client.Disconnected += client => clients.TryRemove(client);
 
             _ = Task.Run(client.StartConnectionAsync);
         }
-
-        Logger.LogWarning("Server is shutting down...");
     }
 
     public IBossBar CreateBossBar(ChatMessage title, float health, BossBarColor color, BossBarDivisionType divisionType, BossBarFlags flags) => new BossBar(this)
@@ -303,7 +321,7 @@ public partial class Server : IServer
         Flags = flags
     };
 
-    internal async Task ExecuteCommand(string input)
+    public async Task ExecuteCommand(string input)
     {
         var context = new CommandContext(CommandsHandler._prefix + input, new CommandSender(CommandIssuers.Console, null, Logger), null, this);
         try
@@ -414,7 +432,7 @@ public partial class Server : IServer
 
     private bool TryAddEntity(World world, Entity entity) => world.TryAddEntity(entity);
 
-    internal void BroadcastPlayerDig(PlayerDiggingStore store, Block block)
+    internal async Task BroadcastPlayerDigAsync(PlayerDiggingStore store, Block block)
     {
         var digging = store.Packet;
 
@@ -433,7 +451,7 @@ public partial class Server : IServer
 
                     var item = new ItemEntity
                     {
-                        EntityId = player + World.TotalLoadedEntities() + 1,
+                        EntityId = player + World.GetTotalLoadedEntities() + 1,
                         Count = 1,
                         Id = droppedItem.AsItem().Id,
                         Glowing = true,
@@ -464,18 +482,19 @@ public partial class Server : IServer
                         Entity = item
                     });
 
+                    player.Inventory.RemoveItem(player.inventorySlot, player.Sneaking ? 64 : 1);//TODO get max stack size for the item
+
                     player.client.SendPacket(new SetSlot
                     {
                         Slot = player.inventorySlot,
 
                         WindowId = 0,
 
-                        SlotData = player.Inventory.GetItem(player.inventorySlot) - 1,
+                        SlotData = player.GetHeldItem(),
 
                         StateId = player.Inventory.StateId++
                     });
 
-                    player.Inventory.RemoveItem(player.inventorySlot);
                     break;
                 }
             case DiggingStatus.StartedDigging:
@@ -490,7 +509,7 @@ public partial class Server : IServer
 
                     if (player.Gamemode == Gamemode.Creative)
                     {
-                        World.SetBlock(digging.Position, Block.Air);
+                        await World.SetBlockAsync(digging.Position, Block.Air);
                     }
                 }
                 break;
@@ -521,7 +540,7 @@ public partial class Server : IServer
 
                     var item = new ItemEntity
                     {
-                        EntityId = player + World.TotalLoadedEntities() + 1,
+                        EntityId = player + World.GetTotalLoadedEntities() + 1,
                         Count = 1,
                         Id = droppedItem.Id,
                         Glowing = true,
@@ -557,12 +576,11 @@ public partial class Server : IServer
         }
     }
 
-    internal void StopServer()
+    public void Stop()
     {
         cts.Cancel();
         tcpListener.Stop();
         WorldGenerators.Clear();
-
         foreach (var client in clients)
             client.Disconnect();
     }
@@ -571,7 +589,7 @@ public partial class Server : IServer
     {
         while (!cts.IsCancellationRequested)
         {
-            await Task.Delay(TimeSpan.FromMinutes(5));
+            await Task.Delay(TimeSpan.FromMinutes(5), cts.Token);
             await World.FlushRegionsAsync();
         }
     }
@@ -615,16 +633,15 @@ public partial class Server : IServer
                 }
             }
 
+            await this.World.DoWorldTickAsync();
+
             long elapsedTicks = stopwatch.ElapsedTicks;
             stopwatch.Restart();
             tpsMeasure.PushMeasurement(elapsedTicks);
             Tps = tpsMeasure.Tps;
 
-            await World.ManageChunksAsync();
             UpdateStatusConsole();
         }
-
-        await World.FlushRegionsAsync();
     }
 
     /// <summary>
@@ -638,8 +655,8 @@ public partial class Server : IServer
 
     internal void UpdateStatusConsole()
     {
-        int chunksLoaded = World.Regions.Sum(entry => entry.Value.LoadedChunkCount);
-        var status = $"    tps:{Tps} c:{World.ChunksToGen.Count}/{chunksLoaded} r:{World.RegionsToLoad.Count}/{World.Regions.Count}";
+        int chunksLoaded = World.Regions.Where(r => r.Value is not null).Sum(r => r.Value.LoadedChunkCount);
+        var status = $"    tps:{Tps} c:{World.ChunksToGen.Count}/{chunksLoaded} r:{World.Regions.Count}";
         ConsoleIO.UpdateStatusLine(status);
     }
 }
