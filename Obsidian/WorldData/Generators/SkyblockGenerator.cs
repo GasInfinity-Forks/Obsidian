@@ -1,4 +1,5 @@
 ﻿using Obsidian.ChunkData;
+using Obsidian.Nbt;
 using Obsidian.WorldData.Generators.Overworld.Features.Trees;
 
 namespace Obsidian.WorldData.Generators;
@@ -38,8 +39,40 @@ public class SkyblockGenerator : WorldGenerator
         await tree.TryGenerateTreeAsync(new Vector(3, 202, 3), 0);
 
         Vector chestPos = new(7, 203, 8);
-        var chest = new Block(Material.Chest, 0);
+        var chest = new Block(Material.Chest, 1);
+        var chestContainer = new Container
+        {
+            BlockPosition = chestPos,
+            Id = "startingChest"
+        };
+        chestContainer.SetItem(1, new ItemStack(Material.Ice, 1));
+
+        var ice = new ItemStack(Material.Ice, 1)
+        {
+            Slot = 0
+        };
+        
+        var lava = new ItemStack(Material.LavaBucket, 1)
+        {
+            Slot = 1
+        };
+
+        var chestTileEntity = new NbtCompound()
+        {
+            new NbtTag<string>("id", chestContainer.Id),
+            new NbtTag<int>("x", chestPos.X),
+            new NbtTag<int>("y", chestPos.Y),
+            new NbtTag<int>("z", chestPos.Z),
+            new NbtTag<string>("CustomName", "WelcomeToSkyblock"),
+            new NbtList(NbtTagType.Compound, "Items")
+            {
+                ice.ToNbt(),
+                lava.ToNbt()
+            }
+        };
+
         chunk.SetBlock(chestPos, chest);
+        chunk.SetBlockEntity(chestPos, chestTileEntity);
 
         chunk.CalculateHeightmap();
 
