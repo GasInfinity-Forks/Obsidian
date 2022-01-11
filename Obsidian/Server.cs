@@ -649,6 +649,7 @@ public partial class Server : IServer
     private void RegisterDefaults()
     {
         Register(new SuperflatGenerator());
+        Register(new SkyblockGenerator());
         Register(new OverworldGenerator(Config.Seed));
     }
 
