@@ -20,17 +20,18 @@ public static partial class Extensions
             // Print text with previous color
             if (start != i)
             {
-                ConsoleIO.Write(message.Substring(start, i - start));
+                ConsoleHandler.Write(message.Substring(start, i - start));
             }
 
             // Change color
             if (colorCode == 'r')
             {
-                Console.ResetColor();
+                ConsoleHandler.ResetColor();
             }
             else
             {
-                Console.ForegroundColor = color.ConsoleColor.Value;
+                if(color.ConsoleColor.HasValue) 
+                    ConsoleHandler.SetForegroundColor(color.ConsoleColor.Value);
             }
 
             // Skip color code
@@ -40,8 +41,8 @@ public static partial class Extensions
 
         // Print remaining text if any
         if (start != message.Length)
-            ConsoleIO.Write(message.Substring(start));
+            ConsoleHandler.Write(message.Substring(start));
 
-        Console.ResetColor();
+        ConsoleHandler.ResetColor();
     }
 }

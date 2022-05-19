@@ -666,6 +666,6 @@ public partial class Server : IServer
     internal void UpdateStatusConsole()
     {
         var status = $"    tps:{Tps} c:{WorldManager.GeneratingChunkCount}/{WorldManager.LoadedChunkCount} r:{WorldManager.RegionCount}";
-        ConsoleIO.UpdateStatusLine(status);
+        ConsoleHandler.UpdateStatus(status);
     }
 }

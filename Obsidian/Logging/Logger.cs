@@ -50,27 +50,21 @@ public class Logger : ILogger<Server>
 
         void PrintLinePrefix()
         {
-            Console.ResetColor();
-            ConsoleIO.Write(time);
-            Console.ForegroundColor = logLevelColor;
-            ConsoleIO.Write(level);
-            Console.ResetColor();
-            ConsoleIO.Write(prefix);
+            ConsoleHandler.SpecialWrite(time, ConsoleHandler.ConsoleTextData.ResetColor);
+            ConsoleHandler.SpecialWrite(level, (ConsoleHandler.ConsoleTextData)logLevelColor);
+            ConsoleHandler.SpecialWrite(prefix, ConsoleHandler.ConsoleTextData.ResetColor);
         }
 
         string message = formatter(state, exception);
         string[] lines = message.Split('\n');
 
-        lock (_lock)
+        for (int i = 0; i < lines.Length; i++)
         {
-            for (int i = 0; i < lines.Length; i++)
-            {
-                PrintLinePrefix();
+            PrintLinePrefix();
 
-                Console.ForegroundColor = ConsoleColor.White;
-                lines[i].RenderColoredConsoleMessage();
-                ConsoleIO.WriteLine(string.Empty);
-            }
+            ConsoleHandler.SetForegroundColor(ConsoleColor.White);
+            lines[i].RenderColoredConsoleMessage();
+            ConsoleHandler.Write("\n");
         }
     }
 

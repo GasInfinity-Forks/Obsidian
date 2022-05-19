@@ -130,14 +130,16 @@ public static class Program
 
     private static void InitConsoleInput()
     {
+        Task.Run(async () => await ConsoleHandler.HandleConsoleIO()); // Console-IO Task
         Task.Run(async () =>
         {
             await Task.Delay(2000);
             while (!shutdownPending)
             {
-                string? input = ConsoleIO.ReadLine();
-                if (!string.IsNullOrEmpty(input))
+                while(ConsoleHandler.ConsoleInput.TryDequeue(out var input)) 
                     await Server.ExecuteCommand(input);
+                
+                await Task.Delay(100); // Feedback to know if this is a great delay
             }
         });
     }
